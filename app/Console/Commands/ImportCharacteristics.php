@@ -80,3 +80,5 @@ class ImportCharacteristics extends Command
         }
     }
 }
+
+

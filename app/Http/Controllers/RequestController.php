@@ -34,6 +34,7 @@ class RequestController extends Controller
         if ($response->successful()) {
             return redirect()->back()->with('success', 'Заявка успешно отправлена!');
         } else {
+            \Log::error('Ошибка при отправке заявки: ' . $response->body());
             return redirect()->back()->with('error', 'Ошибка при отправке заявки!');
         }
     }
