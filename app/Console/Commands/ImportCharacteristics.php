@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Product;
 use App\Models\Characteristic;
 use Illuminate\Console\Command;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -9,7 +10,7 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 class ImportCharacteristics extends Command
 {
     protected $signature = 'import:characteristics {file}';
-    protected $description = 'Import characteristics from an XLSX file';
+    protected $description = 'Import characteristics for products from an XLSX file';
 
     public function handle()
     {
@@ -28,15 +29,31 @@ class ImportCharacteristics extends Command
 
         $this->info('Headers: ' . implode(', ', $headers));
 
-        // Найдем индекс первого столбца с заголовком "ХАРАКТЕРИСТИКИ"
-        $characteristicIndex = array_search('ХАРАКТЕРИСТИКИ', $headers);
+        // Индекс колонки с наименованием продукта
+        $productIndex = array_search('НАИМЕНОВАНИЕ', $headers);
+        if ($productIndex === false) {
+            $this->error("No 'НАИМЕНОВАНИЕ' column found in headers.");
+            return;
+        }
 
+        // Индекс колонки с характеристиками
+        $characteristicIndex = array_search('ХАРАКТЕРИСТИКИ', $headers);
         if ($characteristicIndex === false) {
             $this->error("No 'ХАРАКТЕРИСТИКИ' column found in headers.");
             return;
         }
 
         foreach ($rows as $row) {
+            $productName = $row[$productIndex];
+
+            // Найдем продукт по названию
+            $product = Product::where('name', $productName)->first();
+            if (!$product) {
+                $this->error("Product not found: $productName");
+                continue;
+            }
+
+            // Извлекаем пары характеристик (ключ - значение)
             $characteristics = [];
             for ($i = $characteristicIndex; $i < count($headers); $i++) {
                 if (str_starts_with($headers[$i], 'ХАРАКТЕРИСТИКИ') && !empty($row[$i])) {
@@ -44,13 +61,13 @@ class ImportCharacteristics extends Command
                 }
             }
 
-            $this->createCharacteristics($characteristics);
+            $this->createCharacteristics($product, $characteristics);
         }
 
         $this->info('Characteristics imported successfully.');
     }
 
-    protected function createCharacteristics($characteristics)
+    protected function createCharacteristics($product, $characteristics)
     {
         $characteristicPairs = [];
         $currentKey = null;
@@ -60,6 +77,7 @@ class ImportCharacteristics extends Command
                 continue;
             }
 
+            // Пара ключ-значение для характеристики
             if ($currentKey === null) {
                 $currentKey = $characteristic;
             } else {
@@ -68,6 +86,7 @@ class ImportCharacteristics extends Command
             }
         }
 
+        // Сохранение характеристик для продукта
         foreach ($characteristicPairs as $key => $value) {
             $characteristic = Characteristic::firstOrCreate(['name' => $key]);
 
@@ -76,9 +95,10 @@ class ImportCharacteristics extends Command
                 continue;
             }
 
-            $this->info('Created characteristic: ' . $characteristic->name);
+            // Связываем характеристику с продуктом и добавляем значение
+            $product->characteristics()->attach($characteristic->id, ['value' => $value]);
+
+            $this->info('Linked characteristic: ' . $characteristic->name . ' with value: ' . $value);
         }
     }
 }
-
-

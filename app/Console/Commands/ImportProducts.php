@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Product;
-use App\Models\Characteristic;
+use App\Models\Category;
 use Illuminate\Console\Command;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Illuminate\Support\Facades\Log;
@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Log;
 class ImportProducts extends Command
 {
     protected $signature = 'import:products {file}';
-    protected $description = 'Import products and their characteristics from an XLSX file';
+    protected $description = 'Import products and their categories from an XLSX file';
 
     public function handle()
     {
@@ -31,10 +31,14 @@ class ImportProducts extends Command
         $this->info('Headers: ' . implode(', ', $headers));
         Log::info('Headers: ' . implode(', ', $headers));
 
-        // Логируем индекс заголовка "ХАРАКТЕРИСТИКИ"
-        $characteristicIndex = array_search('ХАРАКТЕРИСТИКИ', $headers);
-        $this->info('Characteristic index: ' . $characteristicIndex);
-        Log::info('Characteristic index: ' . $characteristicIndex);
+        // Получаем индекс колонки КАТЕГОРИИ
+        $categoryIndex = array_search('КАТЕГОРИИ', $headers);
+
+        if ($categoryIndex === false) {
+            $this->error("No 'КАТЕГОРИИ' column found in headers.");
+            Log::error("No 'КАТЕГОРИИ' column found in headers.");
+            return;
+        }
 
         foreach ($rows as $row) {
             $record = array_combine($headers, $row);
@@ -57,65 +61,62 @@ class ImportProducts extends Command
             $this->info('Product created: ' . $product->name);
             Log::info('Product created: ' . $product->name);
 
-            // Обработка характеристик
-            $characteristics = [];
-            for ($i = $characteristicIndex; $i < count($headers); $i++) {
-                if (str_starts_with($headers[$i], 'ХАРАКТЕРИСТИКИ') && !empty($record[$headers[$i]])) {
-                    $characteristics[] = $record[$headers[$i]];
+            // Обрабатываем категории
+            $categories = [];
+            for ($i = $categoryIndex; $i < count($headers); $i++) {
+                if (str_starts_with($headers[$i], 'КАТЕГОРИИ') && !empty($row[$i])) {
+                    $categories[] = $row[$i];
                 }
             }
 
-            // Логируем извлеченные характеристики
-            $this->info('Extracted characteristics: ' . implode(', ', $characteristics));
-            Log::info('Extracted characteristics: ' . implode(', ', $characteristics));
+            $category = $this->createCategoryHierarchy($categories);
 
-            // Добавляем характеристики к продукту
-            $this->addCharacteristicsToProduct($product, $characteristics);
+            if ($category) {
+                // Связываем продукт с категорией
+                $product->categories()->attach($category->id);
+
+                $this->info('Product linked to category: ' . $category->name);
+                Log::info('Product linked to category: ' . $category->name);
+            } else {
+                $this->error("Category not found or created");
+                Log::error("Category not found or created");
+            }
         }
 
-        $this->info('Products and characteristics imported successfully.');
-        Log::info('Products and characteristics imported successfully.');
+        $this->info('Products and categories imported successfully.');
+        Log::info('Products and categories imported successfully.');
     }
 
-    protected function addCharacteristicsToProduct(Product $product, $characteristics)
+    protected function createCategoryHierarchy($categories)
     {
-        $characteristicPairs = [];
-        $currentKey = null;
+        $parentCategory = null;
 
-        foreach ($characteristics as $characteristic) {
-            if (empty($characteristic)) {
+        foreach ($categories as $name) {
+            if (empty($name)) {
+                $this->error('Empty category name encountered. Skipping...');
                 continue;
             }
 
-            // Сначала ключ, затем значение характеристики
-            if ($currentKey === null) {
-                $currentKey = $characteristic;
-            } else {
-                // Сопоставляем ключ и значение
-                $characteristicPairs[$currentKey] = $characteristic;
-                $currentKey = null;
+            $this->info("Creating category: $name");
+            Log::info("Creating category: $name");
+
+            $category = Category::firstOrCreate([
+                'name' => $name,
+                'parent_id' => $parentCategory ? $parentCategory->id : null,
+            ]);
+
+            if (!$category) {
+                $this->error("Failed to create category: $name");
+                Log::error("Failed to create category: $name");
+                continue;
             }
+
+            $this->info('Created category: ' . $category->name . ' with parent_id: ' . ($category->parent_id ?? 'null'));
+            Log::info('Created category: ' . $category->name . ' with parent_id: ' . ($category->parent_id ?? 'null'));
+
+            $parentCategory = $category;
         }
 
-        // Логируем созданные пары ключ-значение
-        $this->info('Characteristic pairs: ' . json_encode($characteristicPairs));
-        Log::info('Characteristic pairs: ' . json_encode($characteristicPairs));
-
-        foreach ($characteristicPairs as $key => $value) {
-            // Находим или создаем характеристику
-            $characteristic = Characteristic::firstOrCreate(['name' => $key]);
-
-            // Проверяем, существует ли уже такая связь
-            if (!$product->characteristics->contains($characteristic->id)) {
-                // Создаем запись в таблице product_characteristics
-                $product->characteristics()->attach($characteristic->id, ['value' => $value]);
-
-                $this->info('Added characteristic to product: ' . $characteristic->name . ' => ' . $value);
-                Log::info('Added characteristic to product: ' . $characteristic->name . ' => ' . $value);
-            } else {
-                $this->info('Characteristic already exists for product: ' . $characteristic->name);
-                Log::info('Characteristic already exists for product: ' . $characteristic->name);
-            }
-        }
+        return $parentCategory;
     }
 }
