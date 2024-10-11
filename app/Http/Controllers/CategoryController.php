@@ -15,7 +15,7 @@ class CategoryController extends Controller
                 $query->with('subcategories.products')->with('products');
             }])
             ->with('products')
-            ->chunk(200, function ($categories) use (&$tree) {
+            ->chunk(100, function ($categories) use (&$tree) {
                 foreach ($categories as $category) {
                     $tree[] = $category->toTree();
                 }
@@ -34,7 +34,9 @@ class CategoryController extends Controller
             return response()->json(['error' => 'Category not found'], 404);
         }
 
-        $subcategories = $category->subcategories()->with('subcategories')->get();
+        $subcategories = $category->subcategories()->with([
+            'products.characteristics'
+        ])->get();
 
         return response()->json([
             'category' => $category->toTree(),

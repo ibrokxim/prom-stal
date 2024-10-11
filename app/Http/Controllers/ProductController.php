@@ -3,22 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
-use App\Traits\PaginateTrait;
-use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Http\Request;
+use App\Traits\PaginateTrait;
 
 class ProductController extends Controller
 {
     use PaginateTrait;
-    public function getProductBySlug($slug)
-    {
-        $product = Product::where('name', $slug)->first();
-        if (!$product) {
-            return response()->json(['error' => 'Product not found'], 404);
-        }
-
-        return response()->json($product);
-    }
 
     public function searchProduct(Request $request)
     {
@@ -41,6 +32,25 @@ class ProductController extends Controller
             'data' => $productsData,
             'pagination' => $this->paginate($products),
         ];
+    }
 
+    public function showProductBySlug($slug)
+    {
+        $products = Product::all();
+
+        $product = $products->first(function ($product) use ($slug) {
+            return Str::slug($product->name) === $slug;
+        });
+
+        if (!$product) {
+            return response()->json(['error' => 'Product not found'], 404);
+        }
+
+        $characteristics = $product->characteristics;
+
+        return response()->json([
+            'product' => $product,
+            'characteristics' => $characteristics,
+        ]);
     }
 }

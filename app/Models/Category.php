@@ -57,6 +57,12 @@ class Category extends Model
                     'name' => $product->name,
                     'slug' => Str::slug($product->name),
                     'image' => $product->image,
+                    'characteristics' => $product->characteristics->map(function ($char) {
+                        return [
+                            'name' => $char->name,
+                            'value' => $char->pivot->value,
+                        ];
+                    }),
                 ];
             }
         }
