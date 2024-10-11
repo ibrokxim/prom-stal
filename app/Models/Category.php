@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Category extends Model
 {
@@ -23,18 +24,25 @@ class Category extends Model
         return $this->belongsToMany(Product::class, 'product_categories');
     }
 
+    public function getSlugAttribute()
+    {
+        return Str::slug($this->name);
+    }
 
     public function toTree()
     {
         $tree = [
             'id' => $this->id,
             'name' => $this->name,
+            'slug' => $this->slug,
             'parent_id' => $this->parent_id,
+            'image' => $this->picture !== null ? ENV('APP_URL') . $this->picture : null,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             'subcategories' => [],
             'products' => [],
         ];
+
 
         if ($this->relationLoaded('subcategories')) {
             foreach ($this->subcategories as $subcategory) {
@@ -47,6 +55,7 @@ class Category extends Model
                 $tree['products'][] = [
                     'id' => $product->id,
                     'name' => $product->name,
+                    'slug' => Str::slug($product->name),
                     'image' => $product->image,
                 ];
             }

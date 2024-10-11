@@ -11,7 +11,7 @@ Route::post('/request', [RequestController::class, 'sendRequestToTelegram']);
 Route::post('/cfeedback', [FeedbackController::class, 'submitFormWithComment']);
 
 Route::get('/category', [CategoryController::class, 'getAllCategories']);
-
+Route::get('/category/{slug}', [CategoryController::class, 'showCategoryBySlug']);
 
 Route::get('/product/{slug}', [ProductController::class, 'getProductBySlug']);
 

@@ -5,8 +5,8 @@ namespace App\Console\Commands;
 use App\Models\Product;
 use App\Models\Category;
 use Illuminate\Console\Command;
-use PhpOffice\PhpSpreadsheet\IOFactory;
 use Illuminate\Support\Facades\Log;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class ImportProducts extends Command
 {
@@ -31,7 +31,6 @@ class ImportProducts extends Command
         $this->info('Headers: ' . implode(', ', $headers));
         Log::info('Headers: ' . implode(', ', $headers));
 
-        // Получаем индекс колонки КАТЕГОРИИ
         $categoryIndex = array_search('КАТЕГОРИИ', $headers);
 
         if ($categoryIndex === false) {
