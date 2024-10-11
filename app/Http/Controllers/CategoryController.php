@@ -9,18 +9,17 @@ class CategoryController extends Controller
 {
     public function getAllCategories()
     {
+        $tree = [];
         $categories = Category::whereNull('parent_id')
             ->with(['subcategories' => function ($query) {
                 $query->with('subcategories.products')->with('products');
             }])
             ->with('products')
-            ->get();
-        $tree = [];
-
-        foreach ($categories as $category) {
-            $tree[] = $category->toTree();
-        }
-
+            ->chunk(200, function ($categories) use (&$tree) {
+                foreach ($categories as $category) {
+                    $tree[] = $category->toTree();
+                }
+            });
         return response()->json($tree);
     }
 
