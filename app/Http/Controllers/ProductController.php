@@ -33,7 +33,7 @@ class ProductController extends Controller
             return [
                 'id' => $product['id'],
                 'name' => $product['name'],
-                'slug' => Str::slug('name'),
+                'slug' => Str::slug($product['name']),
                 'image' => $product['image'],
             ];
         });
