@@ -15,3 +15,4 @@ Route::get('/category/{slug}', [CategoryController::class, 'showCategoryBySlug']
 
 Route::get('/product/{slug}', [ProductController::class, 'getProductBySlug']);
 
+Route::get('/search', [ProductController::class, 'searchProduct']);
