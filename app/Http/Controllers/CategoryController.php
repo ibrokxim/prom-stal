@@ -12,15 +12,33 @@ class CategoryController extends Controller
         $tree = [];
         $categories = Category::whereNull('parent_id')
             ->with(['subcategories' => function ($query) {
-                $query->with('subcategories.products')->with('products');
+                $query->with('subcategories'); // Загружаем подкатегории первого уровня
             }])
-            ->with('products')
             ->chunk(100, function ($categories) use (&$tree) {
                 foreach ($categories as $category) {
-                    $tree[] = $category->toTree();
+                    $tree[] = $this->buildCategoryTree($category);
                 }
             });
+
         return response()->json($tree);
+    }
+
+    private function buildCategoryTree($category)
+    {
+        $tree = [
+            'id' => $category->id,
+            'parent_id' => $category->parent_id,
+            'image' => $category->picture !== null ? ENV('APP_URL') . $category->picture : null,
+            'name' => $category->name,
+            'slug' => $category->slug,
+            'subcategories' => []
+        ];
+
+        foreach ($category->subcategories as $subcategory) {
+            $tree['subcategories'][] = $this->buildCategoryTree($subcategory);
+        }
+
+        return $tree;
     }
 
     public function showCategoryBySlug($slug)
