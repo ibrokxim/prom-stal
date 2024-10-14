@@ -10,7 +10,6 @@ use App\Traits\PaginateTrait;
 class ProductController extends Controller
 {
     use PaginateTrait;
-
     public function searchProduct(Request $request)
     {
         $query = $request->input('query');

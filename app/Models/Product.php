@@ -2,6 +2,7 @@
 
 namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Product extends Model
 {
@@ -23,5 +24,9 @@ class Product extends Model
     {
         return $this->belongsToMany(Characteristic::class, 'product_characteristics')
             ->withPivot('value');
+    }
+    public function getSlugAttribute()
+    {
+        return Str::slug($this->name);
     }
 }

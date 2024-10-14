@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 
 class CategoryController extends Controller
 {
@@ -24,7 +24,7 @@ class CategoryController extends Controller
         return response()->json($tree);
     }
 
-    private function buildCategoryTree($category)
+    private function buildCategoryTree($category, $products  = null)
     {
         $tree = [
             'id' => $category->id,
@@ -35,7 +35,22 @@ class CategoryController extends Controller
             'subcategories' => []
         ];
 
-        $subcategories = $category->subcategories()->with('subcategories')->lazy();
+        if ($products !== null) {
+            foreach ($products as $product) {
+                $tree['products'][] = [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'slug' => $product->slug,
+                    'image' => $product->image,
+                ];
+            }
+        }
+
+        $subcategories = $category->subcategories()->with(['subcategories' => function ($query) {
+            $query->whereHas('products')->with('products');
+        }])->get();
+
+        //$subcategories = $category->subcategories()->with('subcategories')->lazy();
 
         foreach ($subcategories as $subcategory) {
             $tree['subcategories'][] = $this->buildCategoryTree($subcategory);
@@ -47,24 +62,28 @@ class CategoryController extends Controller
 
     public function showCategoryBySlug($slug)
     {
-        $categories = Category::all();
+       $categories = Category::all();
+       $category = $categories->first(function ($category) use ($slug) {
+           return Str::slug($category->name) === $slug;
+       });
+           if (!$category) {
+              return response()->json(['error' => 'Category not found'], 404);
 
-        $category = $categories->first(function ($category) use ($slug) {
-            return Str::slug($category->name) === $slug;
+       }
+
+        $subcategories = Cache::remember('subcategories_by_category_' . $category->id, 60, function () use ($category) {
+            return $category->subcategories()->with('products')->get();
         });
-        if (!$category) {
-            return response()->json(['error' => 'Category not found'], 404);
-        }
 
-        $subcategories = $category->subcategories()->with([
-            'products.characteristics'
-        ])->get();
+        $products = Cache::remember('products_by_category_' . $category->id, 60, function () use ($category) {
+            return $category->products()->with('characteristics')->get();
+        });
 
         return response()->json([
-            'category' => $category->toTree(),
+            'category' => $this->buildCategoryTree($category, $products),
             'subcategories' => $subcategories->map(function ($subcategory) {
-            return $subcategory->toTree();
-        }),
+                return $this->buildCategoryTree($subcategory);
+            }),
         ]);
     }
 }
