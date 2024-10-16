@@ -35,11 +35,17 @@ class ProductController extends Controller
 
     public function showProductBySlug($slug)
     {
-        $products = Product::all();
+        \Log::info('Searching for product by slug: ' . $slug);
 
-        $product = $products->first(function ($product) use ($slug) {
-            return Str::slug($product->name) === $slug;
-        });
+        $product = Product::where(function ($q) use ($slug) {
+            $q->whereRaw('LOWER(name) = ?', [Str::slug($slug)]);
+        })->first();
+
+        if ($product) {
+            \Log::info('Product found: ' . $product->id);
+        } else {
+            \Log::warning('Product not found for slug: ' . $slug);
+        }
 
         if (!$product) {
             return response()->json(['error' => 'Product not found'], 404);
@@ -47,9 +53,12 @@ class ProductController extends Controller
 
         $characteristics = $product->characteristics;
 
+        \Log::info('Product characteristics: ' . json_encode($characteristics));
+
         return response()->json([
             'product' => $product,
             'characteristics' => $characteristics,
         ]);
     }
+
 }

@@ -3,11 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use App\Traits\PaginateTrait;
+use Illuminate\Support\Facades\Cache;
 
 class CategoryController extends Controller
 {
+    use PaginateTrait;
     public function getAllCategories()
     {
         $tree = Cache::remember('all_categories', 60, function () {
@@ -20,7 +23,6 @@ class CategoryController extends Controller
 
             return $tree;
         });
-
         return response()->json($tree);
     }
 
@@ -55,35 +57,71 @@ class CategoryController extends Controller
         foreach ($subcategories as $subcategory) {
             $tree['subcategories'][] = $this->buildCategoryTree($subcategory);
         }
-
         return $tree;
     }
 
 
-    public function showCategoryBySlug($slug)
+    public function showCategoryBySlug($slug, Request $request)
     {
-       $categories = Category::all();
-       $category = $categories->first(function ($category) use ($slug) {
-           return Str::slug($category->name) === $slug;
-       });
-           if (!$category) {
-              return response()->json(['error' => 'Category not found'], 404);
+        $categories = Category::all();
+        $category = $categories->first(function ($category) use ($slug) {
+            return Str::slug($category->name) === $slug;
+        });
 
-       }
+        if (!$category) {
+            return response()->json(['error' => 'Category not found'], 404);
+        }
 
         $subcategories = Cache::remember('subcategories_by_category_' . $category->id, 60, function () use ($category) {
             return $category->subcategories()->with('products')->get();
         });
 
-        $products = Cache::remember('products_by_category_' . $category->id, 60, function () use ($category) {
-            return $category->products()->with('characteristics')->get();
+        // Получаем параметры фильтрации из запроса
+        $filters = $request->input('filters', []);
+
+        // Добавляем пагинацию для продуктов с учетом фильтров
+        $products = Cache::remember('products_by_category_' . $category->id . '_' . md5(json_encode($filters)), 60, function () use ($category, $filters) {
+            $query = $category->products()->with('characteristics');
+
+            foreach ($filters as $filterName => $filterValues) {
+                $query->whereHas('characteristics', function ($query) use ($filterName, $filterValues) {
+                    $query->where('name', $filterName)
+                        ->whereIn('value', $filterValues);
+                });
+            }
+
+            return $query->paginate(10); // 10 продуктов на страницу
         });
 
         return response()->json([
-            'category' => $this->buildCategoryTree($category, $products),
+            'category' => $this->buildCategoryTree($category, $products->items()),
             'subcategories' => $subcategories->map(function ($subcategory) {
                 return $this->buildCategoryTree($subcategory);
             }),
+            'pagination' => $this->paginate($products),
+            'characteristics' => $this->getCharacteristics($products->items()),
         ]);
+    }
+
+    private function getCharacteristics($products)
+    {
+        $characteristics = [];
+
+        foreach ($products as $product) {
+            foreach ($product->characteristics as $characteristic) {
+                $characteristicName = $characteristic->name;
+                $characteristicValue = $characteristic->pivot->value;
+
+                if (!isset($characteristics[$characteristicName])) {
+                    $characteristics[$characteristicName] = [];
+                }
+
+                if (!in_array($characteristicValue, $characteristics[$characteristicName])) {
+                    $characteristics[$characteristicName][] = $characteristicValue;
+                }
+            }
+        }
+
+        return $characteristics;
     }
 }
