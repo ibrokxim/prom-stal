@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
-use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Http\Request;
 use App\Traits\PaginateTrait;
 use Illuminate\Support\Facades\Cache;
 
@@ -13,14 +13,13 @@ class CategoryController extends Controller
     use PaginateTrait;
     public function getAllCategories()
     {
+        ini_set('memory_limit', '2048M');
         $tree = Cache::remember('all_categories', 60, function () {
             $tree = [];
             $categories = Category::whereNull('parent_id')->lazy();
-
             foreach ($categories as $category) {
                 $tree[] = $this->buildCategoryTree($category);
             }
-
             return $tree;
         });
         return response()->json($tree);
