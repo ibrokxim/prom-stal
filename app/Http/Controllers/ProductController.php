@@ -35,6 +35,7 @@ class ProductController extends Controller
 
     public function showProductBySlug($slug)
     {
+
         $product = Product::where('slug', $slug)->first();
 
         if (!$product) {
@@ -46,17 +47,9 @@ class ProductController extends Controller
         });
 
         return response()->json([
-            'product' => [
-                'id' => $product->id,
-                'name' => $product->name,
-                'slug' => $product->slug,
-                'image' => $product->image,
-                'description' => $product->description,
-            ],
-            'characteristics' => $characteristics,
+            'product' => $product,
         ]);
     }
-
 
     public function getAllProducts()
     {
