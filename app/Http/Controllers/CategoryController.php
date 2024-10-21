@@ -13,8 +13,6 @@ class CategoryController extends Controller
     use PaginateTrait;
     public function getAllCategories()
     {
-//        ini_set('memory_limit', '2048M');
-
         $tree = Cache::remember('all_categories', 60, function () {
             $tree = [];
             $categories = Category::whereNull('parent_id')->with('subcategories')->lazy();

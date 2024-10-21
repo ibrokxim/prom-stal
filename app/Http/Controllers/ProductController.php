@@ -37,15 +37,12 @@ class ProductController extends Controller
     {
         \Log::info('Searching for product by slug: ' . $slug);
 
-        $product = Product::whereRaw('LOWER(name) = ?', [Str::slug($slug)])->first();
+        $product = Product::where('slug', $slug)->first();
 
         if ($product) {
             \Log::info('Product found: ' . $product->id);
         } else {
             \Log::warning('Product not found for slug: ' . $slug);
-        }
-
-        if (!$product) {
             return response()->json(['error' => 'Product not found'], 404);
         }
 
