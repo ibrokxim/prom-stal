@@ -35,23 +35,24 @@ class ProductController extends Controller
 
     public function showProductBySlug($slug)
     {
-        \Log::info('Searching for product by slug: ' . $slug);
-
         $product = Product::where('slug', $slug)->first();
 
-        if ($product) {
-            \Log::info('Product found: ' . $product->id);
-        } else {
-            \Log::warning('Product not found for slug: ' . $slug);
+        if (!$product) {
             return response()->json(['error' => 'Product not found'], 404);
         }
 
-        $characteristics = $product->characteristics;
-
-        \Log::info('Product characteristics: ' . json_encode($characteristics));
+        $characteristics = $product->characteristics->mapWithKeys(function($item) {
+            return [$item->name => $item->pivot->value];
+        });
 
         return response()->json([
-            'product' => $product,
+            'product' => [
+                'id' => $product->id,
+                'name' => $product->name,
+                'slug' => $product->slug,
+                'image' => $product->image,
+                'description' => $product->description,
+            ],
             'characteristics' => $characteristics,
         ]);
     }
