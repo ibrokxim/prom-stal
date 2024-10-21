@@ -42,12 +42,17 @@ class ProductController extends Controller
             return response()->json(['error' => 'Product not found'], 404);
         }
 
-        $characteristics = $product->characteristics->mapWithKeys(function($item) {
-            return [$item->name => $item->pivot->value];
-        });
+        $characteristics = $product->characteristics->unique('id');
 
         return response()->json([
-            'product' => $product,
+            'product' => [
+                'id' => $product->id,
+                'name' => $product->name,
+                'slug' => $product->slug,
+                'image' => $product->image,
+                'description' => $product->description,
+                'characteristics' => $characteristics // Возвращаем уникальные характеристики
+            ]
         ]);
     }
 
