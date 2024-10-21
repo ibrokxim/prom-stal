@@ -15,6 +15,7 @@ Route::get('/category', [CategoryController::class, 'getAllCategories']);
 Route::get('/category/{slug}', [CategoryController::class, 'showCategoryBySlug']);
 
 Route::get('/products/{slug}', [ProductController::class, 'showProductBySlug']);
+Route::get('products', [ProductController::class, 'getAllProducts']);
 
 Route::get('/search', [ProductController::class, 'searchProduct']);
 Route::post('/translate', [TranslateController::class, 'translate']);

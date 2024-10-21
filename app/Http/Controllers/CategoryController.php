@@ -14,9 +14,10 @@ class CategoryController extends Controller
     public function getAllCategories()
     {
         ini_set('memory_limit', '2048M');
+
         $tree = Cache::remember('all_categories', 60, function () {
             $tree = [];
-            $categories = Category::whereNull('parent_id')->lazy();
+            $categories = Category::whereNull('parent_id')->with('subcategories')->lazy();
             foreach ($categories as $category) {
                 $tree[] = $this->buildCategoryTree($category);
             }
@@ -25,33 +26,36 @@ class CategoryController extends Controller
         return response()->json($tree);
     }
 
-    private function buildCategoryTree($category, $products  = null)
+    private function buildCategoryTree($category, $productsPage = 1, $pageSize = 20)
     {
+//        $products = $category->products()->paginate($pageSize, ['*'], 'products_page', $productsPage);
+
         $tree = [
             'id' => $category->id,
             'name' => $category->name,
             'slug' => $category->slug,
             'parent_id' => $category->parent_id,
             'image' => $category->picture !== null ? ENV('APP_URL') . $category->picture : null,
+
             'subcategories' => []
         ];
 
-        if ($products !== null) {
-            foreach ($products as $product) {
-                $tree['products'][] = [
-                    'id' => $product->id,
-                    'name' => $product->name,
-                    'slug' => $product->slug,
-                    'image' => $product->image,
-                ];
-            }
-        }
+//        if ($products !== null) {
+//            foreach ($products as $product) {
+//                $tree['products'][] = [
+//                    'id' => $product->id,
+//                    'name' => $product->name,
+//                    'slug' => $product->slug,
+//                    'image' => $product->image,
+//                ];
+//            }
+//        }
 
-        $subcategories = $category->subcategories()->with(['subcategories' => function ($query) {
-            $query->whereHas('products')->with('products');
-        }])->get();
+//        $subcategories = $category->subcategories()->with(['subcategories' => function ($query) {
+//            $query->whereHas('products')->with('products');
+//        }])->get();
 
-        //$subcategories = $category->subcategories()->with('subcategories')->lazy();
+        $subcategories = $category->subcategories()->with('subcategories')->get();
 
         foreach ($subcategories as $subcategory) {
             $tree['subcategories'][] = $this->buildCategoryTree($subcategory);

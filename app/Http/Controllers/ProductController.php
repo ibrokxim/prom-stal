@@ -37,9 +37,7 @@ class ProductController extends Controller
     {
         \Log::info('Searching for product by slug: ' . $slug);
 
-        $product = Product::where(function ($q) use ($slug) {
-            $q->whereRaw('LOWER(name) = ?', [Str::slug($slug)]);
-        })->first();
+        $product = Product::whereRaw('LOWER(name) = ?', [Str::slug($slug)])->first();
 
         if ($product) {
             \Log::info('Product found: ' . $product->id);
@@ -61,4 +59,22 @@ class ProductController extends Controller
         ]);
     }
 
+
+    public function getAllProducts()
+    {
+        $products = Product::paginate(20);
+        $products->getCollection()->transform(function ($product) {
+            return [
+                'id' => $product->id,
+                'name' => $product->name,
+                'slug' => Str::slug($product->name),
+                'image' => $product->image,
+            ];
+        });
+
+        return response()->json([
+            'products' => $products->items(),
+            'pagination' => $this->paginate($products),
+        ]);
+    }
 }
