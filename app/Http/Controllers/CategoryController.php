@@ -13,22 +13,22 @@ class CategoryController extends Controller
     use PaginateTrait;
     public function getAllCategories()
     {
-        ini_set('memory_limit', '2048M');
+//        ini_set('memory_limit', '2048M');
 
         $tree = Cache::remember('all_categories', 60, function () {
             $tree = [];
             $categories = Category::whereNull('parent_id')->with('subcategories')->lazy();
             foreach ($categories as $category) {
-                $tree[] = $this->buildCategoryTree($category);
+                $tree[] = $this->buildCategoryTree($category, false);
             }
             return $tree;
         });
         return response()->json($tree);
     }
 
-    private function buildCategoryTree($category, $productsPage = 1, $pageSize = 20)
+    private function buildCategoryTree($category, $includeProducts = false,$productsPage = 1, $pageSize = 20)
     {
-//        $products = $category->products()->paginate($pageSize, ['*'], 'products_page', $productsPage);
+       // $products = $category->products()->paginate($pageSize, ['*'], 'products_page', $productsPage);
 
         $tree = [
             'id' => $category->id,
@@ -40,16 +40,18 @@ class CategoryController extends Controller
             'subcategories' => []
         ];
 
-//        if ($products !== null) {
-//            foreach ($products as $product) {
-//                $tree['products'][] = [
-//                    'id' => $product->id,
-//                    'name' => $product->name,
-//                    'slug' => $product->slug,
-//                    'image' => $product->image,
-//                ];
-//            }
-//        }
+        if ($includeProducts) {
+            $products = $category->products()->paginate($pageSize, ['*'], 'products_page', $productsPage);
+            foreach ($products as $product) {
+                $tree['products'][] = [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'slug' => $product->slug,
+                    'image' => $product->image,
+                ];
+            }
+        }
+
 
 //        $subcategories = $category->subcategories()->with(['subcategories' => function ($query) {
 //            $query->whereHas('products')->with('products');
@@ -58,7 +60,7 @@ class CategoryController extends Controller
         $subcategories = $category->subcategories()->with('subcategories')->get();
 
         foreach ($subcategories as $subcategory) {
-            $tree['subcategories'][] = $this->buildCategoryTree($subcategory);
+            $tree['subcategories'][] = $this->buildCategoryTree($subcategory, $includeProducts);
         }
         return $tree;
     }
@@ -79,10 +81,8 @@ class CategoryController extends Controller
             return $category->subcategories()->with('products')->get();
         });
 
-        // Получаем параметры фильтрации из запроса
         $filters = $request->input('filters', []);
 
-        // Добавляем пагинацию для продуктов с учетом фильтров
         $products = Cache::remember('products_by_category_' . $category->id . '_' . md5(json_encode($filters)), 60, function () use ($category, $filters) {
             $query = $category->products()->with('characteristics');
 
