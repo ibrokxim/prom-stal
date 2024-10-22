@@ -43,6 +43,14 @@ class ProductController extends Controller
         }
 
         $characteristics = $product->characteristics->unique('id');
+        $categories = $product->categories->pluck('id')->toArray();
+        $similarProducts = Product::whereHas('categories', function ($query) use ($categories) {
+            $query->whereIn('category_id', $categories);
+        })
+            ->where('id', '!=', $product->id)
+            ->inRandomOrder()
+            ->limit(5)
+            ->get();
 
         return response()->json([
             'product' => [
@@ -52,7 +60,8 @@ class ProductController extends Controller
                 'image' => $product->image,
                 'description' => $product->description,
                 'characteristics' => $characteristics
-            ]
+            ],
+            'similar_products' => $similarProducts
         ]);
     }
 
