@@ -51,7 +51,7 @@ class ProductController extends Controller
                 'slug' => $product->slug,
                 'image' => $product->image,
                 'description' => $product->description,
-                'characteristics' => $characteristics // Возвращаем уникальные характеристики
+                'characteristics' => $characteristics
             ]
         ]);
     }
