@@ -7,7 +7,6 @@ use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Traits\PaginateTrait;
 use Illuminate\Support\Facades\Cache;
-
 class CategoryController extends Controller
 {
     use PaginateTrait;
@@ -16,6 +15,7 @@ class CategoryController extends Controller
         $tree = Cache::remember('all_categories', 60, function () {
             $tree = [];
             $categories = Category::whereNull('parent_id')->with('subcategories')->lazy();
+
             foreach ($categories as $category) {
                 $tree[] = $this->buildCategoryTree($category, false);
             }
@@ -27,7 +27,6 @@ class CategoryController extends Controller
     private function buildCategoryTree($category, $includeProducts = false,$productsPage = 1, $pageSize = 20)
     {
        // $products = $category->products()->paginate($pageSize, ['*'], 'products_page', $productsPage);
-
         $tree = [
             'id' => $category->id,
             'name' => $category->name,
@@ -49,11 +48,6 @@ class CategoryController extends Controller
                 ];
             }
         }
-
-
-//        $subcategories = $category->subcategories()->with(['subcategories' => function ($query) {
-//            $query->whereHas('products')->with('products');
-//        }])->get();
 
         $subcategories = $category->subcategories()->with('subcategories')->get();
 
@@ -91,7 +85,7 @@ class CategoryController extends Controller
                 });
             }
 
-            return $query->paginate(10); // 10 продуктов на страницу
+            return $query->paginate(20);
         });
 
         return response()->json([
@@ -123,6 +117,14 @@ class CategoryController extends Controller
             }
         }
 
-        return $characteristics;
+        $formattedCharacteristics = [];
+        foreach ($characteristics as $name => $values) {
+            $formattedCharacteristics[] = [
+                'name' => $name,
+                'values' => $values,
+            ];
+        }
+
+        return $formattedCharacteristics;
     }
 }

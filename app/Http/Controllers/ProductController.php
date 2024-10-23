@@ -35,7 +35,6 @@ class ProductController extends Controller
 
     public function showProductBySlug($slug)
     {
-
         $product = Product::where('slug', $slug)->first();
 
         if (!$product) {
