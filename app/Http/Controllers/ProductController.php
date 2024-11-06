@@ -27,6 +27,7 @@ class ProductController extends Controller
                 'image' => $product['image'],
             ];
         });
+        
         return [
             'data' => $productsData,
             'pagination' => $this->paginate($products),

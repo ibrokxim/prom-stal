@@ -60,6 +60,7 @@ class CategoryController extends Controller
 
     public function showCategoryBySlug($slug, Request $request)
     {
+        ini_set('memory_limit', '2048M');
         $categories = Category::all();
         $category = $categories->first(function ($category) use ($slug) {
             return Str::slug($category->name) === $slug;

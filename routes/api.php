@@ -19,3 +19,5 @@ Route::get('products', [ProductController::class, 'getAllProducts']);
 
 Route::get('/search', [ProductController::class, 'searchProduct']);
 Route::post('/translate', [TranslateController::class, 'translate']);
+
+
