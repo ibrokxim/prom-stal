@@ -26,7 +26,6 @@ class CategoryController extends Controller
 
     private function buildCategoryTree($category, $includeProducts = false,$productsPage = 1, $pageSize = 20)
     {
-       // $products = $category->products()->paginate($pageSize, ['*'], 'products_page', $productsPage);
         $tree = [
             'id' => $category->id,
             'name' => $category->name,
@@ -60,7 +59,7 @@ class CategoryController extends Controller
 
     public function showCategoryBySlug($slug, Request $request)
     {
-        ini_set('memory_limit', '2048M');
+        //ini_set('memory_limit', '2048M');
         $categories = Category::all();
         $category = $categories->first(function ($category) use ($slug) {
             return Str::slug($category->name) === $slug;
@@ -70,24 +69,21 @@ class CategoryController extends Controller
             return response()->json(['error' => 'Category not found'], 404);
         }
 
-        $subcategories = Cache::remember('subcategories_by_category_' . $category->id, 60, function () use ($category) {
-            return $category->subcategories()->with('products')->get();
-        });
+        $subcategories = $category->subcategories()->with('products')->get();
 
         $filters = $request->input('filters', []);
+        $page = $request->input('page', 1); // Получаем текущую страницу из запроса
 
-        $products = Cache::remember('products_by_category_' . $category->id . '_' . md5(json_encode($filters)), 60, function () use ($category, $filters) {
-            $query = $category->products()->with('characteristics');
+        $query = $category->products()->with('characteristics');
 
-            foreach ($filters as $filterName => $filterValues) {
-                $query->whereHas('characteristics', function ($query) use ($filterName, $filterValues) {
-                    $query->where('name', $filterName)
-                        ->whereIn('value', $filterValues);
-                });
-            }
+        foreach ($filters as $filterName => $filterValues) {
+            $query->whereHas('characteristics', function ($query) use ($filterName, $filterValues) {
+                $query->where('name', $filterName)
+                    ->whereIn('value', $filterValues);
+            });
+        }
 
-            return $query->paginate(20);
-        });
+        $products = $query->paginate(20, ['*'], 'page', $page); // Передаем текущую страницу в paginate
 
         return response()->json([
             'category' => $this->buildCategoryTree($category, $products->items()),
