@@ -24,7 +24,7 @@ class CategoryController extends Controller
         return response()->json($tree);
     }
 
-    private function buildCategoryTree($category, $includeProducts = false,$productsPage = 1, $pageSize = 20)
+    private function buildCategoryTree($category, $includeProducts = false,$productsPage = 3, $pageSize = 20)
     {
         $tree = [
             'id' => $category->id,
@@ -32,7 +32,6 @@ class CategoryController extends Controller
             'slug' => $category->slug,
             'parent_id' => $category->parent_id,
             'image' => $category->picture !== null ? ENV('APP_URL') . $category->picture : null,
-
             'subcategories' => []
         ];
 
@@ -86,9 +85,9 @@ class CategoryController extends Controller
         $products = $query->paginate(20, ['*'], 'page', $page); // Передаем текущую страницу в paginate
 
         return response()->json([
-            'category' => $this->buildCategoryTree($category, $products->items()),
-            'subcategories' => $subcategories->map(function ($subcategory) {
-                return $this->buildCategoryTree($subcategory);
+            'category' => $this->buildCategoryTree($category, true, $page, 20),
+            'subcategories' => $subcategories->map(function ($subcategory) use ($page) {
+                return $this->buildCategoryTree($subcategory, true, $page, 20);
             }),
             'pagination' => $this->paginate($products),
             'characteristics' => $this->getCharacteristics($products->items()),
