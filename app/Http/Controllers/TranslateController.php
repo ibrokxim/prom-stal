@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\GoogleTranslateService;
 use Illuminate\Http\Request;
 
 class TranslateController extends Controller
