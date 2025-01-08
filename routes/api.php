@@ -5,7 +5,6 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\RequestController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\FeedbackController;
-use App\Http\Controllers\TranslateController;
 
 Route::post('/feedback', [FeedbackController::class, 'submitForm']);
 Route::post('/request', [RequestController::class, 'sendRequestToTelegram']);
