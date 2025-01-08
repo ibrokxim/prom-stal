@@ -6,8 +6,7 @@ use Illuminate\Support\Str;
 
 class Product extends Model
 {
-    protected $fillable = ['name', 'image', 'description', 'slug',];
-
+    protected $fillable = ['name', 'image', 'description', 'slug','meta_title', 'meta_description', 'code'];
     public function categories()
     {
         return $this->belongsToMany(Category::class, 'product_categories');

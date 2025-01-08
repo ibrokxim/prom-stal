@@ -123,4 +123,63 @@ class CategoryController extends Controller
 
         return $formattedCharacteristics;
     }
+
+    // admin
+
+    public function categoryIndex()
+    {
+        $categories = Category::query()->paginate(20);
+        return view('admin.categories.index', compact('categories'));
+    }
+
+    public function categoryCreate()
+    {
+        return view('admin.categories.create');
+    }
+
+    public function categoryEdit($id)
+    {
+        $categories = Category::findOrFail($id);
+        return view('admin.categories.edit', compact('categories'));
+    }
+
+    public function categoryDestroy($id)
+    {
+        $categories = Category::findOrFail($id);
+        $categories->delete();
+
+        return redirect()->route('admin.categories.index')->with('success', 'SEO запись удалена!');
+    }
+
+    public function categoryUpdate(Request $request, $id)
+    {
+        // Находим SEO запись по ID
+        $categories = Category::findOrFail($id);
+
+        // Валидация данных
+        $request->validate([
+            'meta_title' => 'nullable|string|max:255',
+            'meta_description' => 'nullable|string',
+            'code' => 'required|string|max:255|unique:seo,code,' . $categories->id,
+        ]);
+
+        // Обновление записи
+        $categories->update($request->all());
+
+        // Перенаправление с сообщением об успехе
+        return redirect()->route('admin.categories.index')->with('success', 'SEO запись обновлена!');
+    }
+
+    public function categoryStore(Request $request)
+    {
+        $request->validate([
+            'meta_title' => 'nullable|string|max:255',
+            'meta_description' => 'nullable|string',
+            'code' => 'required|string|unique:seo,code|max:255',
+        ]);
+
+        Category::create($request->all());
+
+        return redirect()->route('admin.categories.index')->with('success', 'SEO запись добавлена!');
+    }
 }
