@@ -50,7 +50,7 @@ class GenerateSitemap extends Command
         $categories = Category::all();
         foreach ($categories as $category) {
             $mainSitemap->add(
-                Url::create(route('category.show', $category->slug))
+                Url::create(route('/category/', $category->slug))
                     ->setLastModificationDate($category->updated_at)
                     ->setChangeFrequency('weekly')
                     ->setPriority(0.8)
@@ -83,7 +83,7 @@ class GenerateSitemap extends Command
 
             foreach ($products as $product) {
                 $sitemap->add(
-                    Url::create(route('product.show', $product->slug))
+                    Url::create(route('/product/', $product->slug))
                         ->setLastModificationDate($product->updated_at)
                         ->setChangeFrequency('weekly')
                         ->setPriority(0.6)
