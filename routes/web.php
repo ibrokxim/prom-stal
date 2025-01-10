@@ -29,6 +29,8 @@ Route::middleware('auth')->group(function () {
         Route::get('product/{id}/edit', [ProductController::class, 'productEdit'])->name('admin.products.edit');
         Route::put('product/{id}', [ProductController::class, 'productUpdate'])->name('admin.products.update');
         Route::delete('product/{id}', [ProductController::class, 'productDestroy'])->name('admin.products.destroy');
+        Route::get('product/{slug}', [CategoryController::class, 'show'])->name('product.show');
+
 
         Route::get('category', [CategoryController::class, 'categoryIndex'])->name('admin.categories.index');
         Route::get('category/create', [CategoryController::class, 'categoryCreate'])->name('admin.categories.create');
@@ -36,6 +38,7 @@ Route::middleware('auth')->group(function () {
         Route::get('category/{id}/edit', [CategoryController::class, 'categoryEdit'])->name('admin.categories.edit');
         Route::put('category/{id}', [CategoryController::class, 'categoryUpdate'])->name('admin.categories.update');
         Route::delete('category/{id}', [CategoryController::class, 'categoryDestroy'])->name('admin.categories.destroy');
+        Route::get('category/{slug}', [CategoryController::class, 'show'])->name('category.show');
 
 //    Route::resource('category', CategoryController::class);
         });
