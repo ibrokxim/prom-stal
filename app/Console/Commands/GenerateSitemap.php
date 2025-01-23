@@ -18,6 +18,8 @@ class GenerateSitemap extends Command
     {
         $this->info('Generating sitemap...');
 
+        $mainDomain = 'https://apromstal.kz';
+
         // Создаем SitemapIndex
         $sitemapIndex = SitemapIndex::create();
 
@@ -25,7 +27,7 @@ class GenerateSitemap extends Command
         $mainSitemap = Sitemap::create();
 
         // Главная страница
-        $mainSitemap->add(Url::create('/')
+        $mainSitemap->add(Url::create($mainDomain . '/')
             ->setLastModificationDate(now())
             ->setChangeFrequency('daily')
             ->setPriority(1.0));
@@ -33,7 +35,7 @@ class GenerateSitemap extends Command
         // Категории
         $categories = Category::all();
         foreach ($categories as $category) {
-            $mainSitemap->add(Url::create(route('category.show', $category->slug))
+            $mainSitemap->add(Url::create($mainDomain . route('category.show', $category->slug, false))
                 ->setLastModificationDate($category->updated_at)
                 ->setChangeFrequency('weekly')
                 ->setPriority(0.8));
@@ -46,11 +48,11 @@ class GenerateSitemap extends Command
 
         // Генерация sitemap для товаров (пакетами по 1000)
         $products = Product::query();
-        $products->chunk(1000, function ($chunk, $page) use ($sitemapIndex) {
+        $products->chunk(1000, function ($chunk, $page) use ($sitemapIndex, $mainDomain) {
             $sitemap = Sitemap::create();
 
             foreach ($chunk as $product) {
-                $sitemap->add(Url::create(route('product.show', $product->slug))
+                $sitemap->add(Url::create($mainDomain . route('product.show', $product->slug, false))
                     ->setLastModificationDate($product->updated_at)
                     ->setChangeFrequency('weekly')
                     ->setPriority(0.6));

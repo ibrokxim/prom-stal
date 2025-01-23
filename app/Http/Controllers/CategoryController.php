@@ -200,21 +200,25 @@ class CategoryController extends Controller
 
         return response()->json(['message' => 'SEO данные успешно обновлены']);
     }
-    public function bulkUpdateSeo(Request $request)
+    public function bulkSeoEdit()
+    {
+        $categories = Category::all();
+        return view('admin.categories.bulk-edit', compact('categories'));
+    }
+
+    public function bulkSeoUpdate(Request $request)
     {
         $validated = $request->validate([
             'category_ids' => 'required|array',
             'category_ids.*' => 'exists:categories,id',
             'meta_title' => 'nullable|string|max:255',
             'meta_description' => 'nullable|string',
-            'meta_keywords' => 'nullable|string',
-            'h1' => 'nullable|string|max:255',
-            'canonical_url' => 'nullable|url',
-            'robots' => 'nullable|string',
+            'code' => 'nullable|string',
         ]);
 
         $categories = Category::whereIn('id', $validated['category_ids'])->get();
         $this->seoService->bulkUpdateSeo($categories, $validated);
-        return response()->json(['message' => 'Массовое обновление SEO завершено']);
+
+        return redirect()->route('admin.categories.index')->with('success', 'Массовое обновление SEO завершено');
     }
 }

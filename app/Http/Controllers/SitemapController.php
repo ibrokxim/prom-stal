@@ -10,6 +10,8 @@ use App\Models\Category;
 
 class SitemapController extends Controller
 {
+    private $mainDomain = 'https://apromstal.kz';
+
     /**
      * Генерация Sitemap Index.
      */
@@ -34,7 +36,7 @@ class SitemapController extends Controller
         // Добавляем категории
         $categories = Category::all();
         foreach ($categories as $category) {
-            $sitemap->add(Url::create(route('category.show', $category->slug))
+            $sitemap->add(Url::create($this->mainDomain . route('category.show', $category->slug, false))
                 ->setLastModificationDate($category->updated_at)
                 ->setChangeFrequency('weekly')
                 ->setPriority(0.8));
@@ -58,7 +60,7 @@ class SitemapController extends Controller
 
         // Добавляем товары
         foreach ($products as $product) {
-            $sitemap->add(Url::create(route('product.show', $product->slug))
+            $sitemap->add(Url::create($this->mainDomain . route('product.show', $product->slug, false))
                 ->setLastModificationDate($product->updated_at)
                 ->setChangeFrequency('weekly')
                 ->setPriority(0.6));

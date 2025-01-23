@@ -6,7 +6,9 @@
 
 
     <div class="card">
-        <a href="{{ route('admin.seo.create') }}" class="btn btn-primary mb-3">Добавить запись</a>
+        <div class="d-flex justify-content-start my-4">
+            <a href="{{ route('admin.seo.create') }}" class="btn btn-primary mb-3">Добавить запись</a>
+        </div>
         <h5 class="card-header">SEO Записи</h5>
         <div class="table-responsive text-nowrap">
             <table class="table">

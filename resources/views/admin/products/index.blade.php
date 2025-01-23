@@ -4,7 +4,9 @@
 
 @section('content')
     <div class="card">
-        <a href="{{ route('admin.products.create') }}" class="btn btn-primary mb-3">Добавить запись</a>
+        <div class="d-flex justify-content-start my-4">
+            <a href="{{ route('admin.seo.create') }}" class="btn btn-lg btn-primary">Добавить запись</a>
+        </div>
         <h5 class="card-header">Product Записи</h5>
         <div class="table-responsive text-nowrap">
             <table class="table">
@@ -39,6 +41,7 @@
                 @endforeach
                 </tbody>
             </table>
+            <br>
             {{ $products->links('pagination::bootstrap-4') }}
         </div>
     </div>

@@ -24,7 +24,7 @@
             <div class="app-brand demo">
                 <a href="{{ route('admin.seo.index') }}" class="app-brand-link">
                     <span class="app-brand-logo demo"></span>
-                    <span class="app-brand-text demo menu-text fw-bolder ms-2">promstal</span>
+                    <span class="app-brand-text demo menu-text fw-bolder ms-2">A-Promstal</span>
                 </a>
             </div>
             <div class="menu-inner-shadow"></div>
@@ -51,16 +51,7 @@
         </aside>
 
         <div class="layout-page">
-            <nav class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme">
-                <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
-                    <div class="navbar-nav align-items-center">
-                        <div class="nav-item d-flex align-items-center">
-                            <i class="bx bx-search fs-4 lh-0"></i>
-                            <input type="text" class="form-control border-0 shadow-none" placeholder="Поиск" />
-                        </div>
-                    </div>
-                </div>
-            </nav>
+
 
             <div class="content-wrapper">
                 @yield('content')
