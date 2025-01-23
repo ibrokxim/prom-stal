@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\HasSeo;
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Model;
 
 class Category extends Model
 {
+    use HasSeo;
     protected $fillable = ['name', 'parent_id','meta_title', 'meta_description', 'code'];
 
     public function parent()

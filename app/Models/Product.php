@@ -1,11 +1,14 @@
 <?php
 
 namespace App\Models;
-use Illuminate\Database\Eloquent\Model;
+
+use App\Traits\HasSeo;
 use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model
 {
+    use HasSeo;
     protected $fillable = ['name', 'image', 'description', 'slug','meta_title', 'meta_description', 'code'];
     public function categories()
     {

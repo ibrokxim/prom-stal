@@ -12,12 +12,20 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('seo', function (Blueprint $table) {
-            $table->id(); // Первичный ключ
-            $table->string('meta_title')->nullable(); // Заголовок meta
-            $table->text('meta_description')->nullable(); // Описание meta
-            $table->string('header_seo')->nullable(); // Заголовок SEO
-            $table->text('main_seo')->nullable(); // Основной контент SEO
-            $table->string('code')->unique(); // Код
+            $table->id();
+            $table->morphs('seoable');
+            $table->string('meta_title')->nullable();
+            $table->text('meta_description')->nullable();
+            $table->string('meta_keywords')->nullable();
+            $table->string('h1')->nullable();
+            $table->string('code')->nullable();
+            $table->string('og_title')->nullable();
+            $table->text('og_description')->nullable();
+            $table->string('og_image')->nullable();
+            $table->text('text')->nullable();
+            $table->string('image')->nullable();
+            $table->string('canonical_url')->nullable();
+            $table->string('robots')->nullable();
             $table->timestamps();
         });
     }

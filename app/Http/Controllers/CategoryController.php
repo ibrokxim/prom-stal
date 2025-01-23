@@ -4,12 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use Illuminate\Support\Str;
+use App\Services\SeoService;
 use Illuminate\Http\Request;
 use App\Traits\PaginateTrait;
 use Illuminate\Support\Facades\Cache;
+
 class CategoryController extends Controller
 {
     use PaginateTrait;
+    protected $seoService;
+    public function __construct(SeoService $seoService)
+    {
+        $this->seoService = $seoService;
+    }
     public function getAllCategories()
     {
         $tree = Cache::remember('all_categories', 60, function () {
@@ -54,7 +61,6 @@ class CategoryController extends Controller
         }
         return $tree;
     }
-
 
     public function showCategoryBySlug($slug, Request $request)
     {
@@ -124,8 +130,6 @@ class CategoryController extends Controller
         return $formattedCharacteristics;
     }
 
-    // admin
-
     public function categoryIndex()
     {
         $categories = Category::query()->paginate(20);
@@ -153,10 +157,8 @@ class CategoryController extends Controller
 
     public function categoryUpdate(Request $request, $id)
     {
-        // Находим SEO запись по ID
         $categories = Category::findOrFail($id);
 
-        // Валидация данных
         $request->validate([
             'meta_title' => 'nullable|string|max:255',
             'meta_description' => 'nullable|string',
@@ -181,5 +183,38 @@ class CategoryController extends Controller
         Category::create($request->all());
 
         return redirect()->route('admin.categories.index')->with('success', 'SEO запись добавлена!');
+    }
+
+    public function updateSeo(Request $request, Category $category)
+    {
+        $validated = $request->validate([
+            'meta_title' => 'nullable|string|max:255',
+            'meta_description' => 'nullable|string',
+            'meta_keywords' => 'nullable|string',
+            'h1' => 'nullable|string|max:255',
+            'canonical_url' => 'nullable|url',
+            'robots' => 'nullable|string',
+        ]);
+
+        $this->seoService->updateSeo($category, $validated);
+
+        return response()->json(['message' => 'SEO данные успешно обновлены']);
+    }
+    public function bulkUpdateSeo(Request $request)
+    {
+        $validated = $request->validate([
+            'category_ids' => 'required|array',
+            'category_ids.*' => 'exists:categories,id',
+            'meta_title' => 'nullable|string|max:255',
+            'meta_description' => 'nullable|string',
+            'meta_keywords' => 'nullable|string',
+            'h1' => 'nullable|string|max:255',
+            'canonical_url' => 'nullable|url',
+            'robots' => 'nullable|string',
+        ]);
+
+        $categories = Category::whereIn('id', $validated['category_ids'])->get();
+        $this->seoService->bulkUpdateSeo($categories, $validated);
+        return response()->json(['message' => 'Массовое обновление SEO завершено']);
     }
 }

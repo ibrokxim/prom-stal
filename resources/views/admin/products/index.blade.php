@@ -10,11 +10,7 @@
             <table class="table">
                 <thead>
                 <tr>
-                    <th>ID</th>
                     <th>Name</th>
-                    <th>Slug</th>
-                    <th>Image</th>
-                    <th>Description</th>
                     <th>Meta Title</th>
                     <th>Meta Description</th>
                     <th>Code</th>
@@ -25,11 +21,7 @@
                 <tbody>
                 @foreach($products as $product)
                     <tr>
-                        <td></td>
                         <td>{{ $product->name }}</td>
-                        <td>{{ $product->slug }}</td>
-                        <td>{{ $product->image }}</td>
-                        <td>{{ $product->description }}</td>
                         <td>{{ $product->meta_title }}</td>
                         <td>{{ $product->meta_description }}</td>
                         <td>{{ $product->code }}</td>
@@ -47,39 +39,8 @@
                 @endforeach
                 </tbody>
             </table>
-            {{ $products->links() }}
+            {{ $products->links('pagination::bootstrap-4') }}
         </div>
     </div>
-{{--    <script>--}}
-{{--        document.addEventListener('DOMContentLoaded', () => {--}}
-{{--            // Функция для обновления индексов--}}
-{{--            const updateTableIndexes = () => {--}}
-{{--                const table = document.querySelector('table tbody'); // Ищем тело таблицы--}}
-{{--                if (!table) return;--}}
 
-{{--                const rows = table.querySelectorAll('tr'); // Находим все строки таблицы--}}
-{{--                rows.forEach((row, index) => {--}}
-{{--                    const idCell = row.querySelector('td:first-child'); // Первая ячейка строки--}}
-{{--                    if (idCell) {--}}
-{{--                        idCell.textContent = index + 1; // Обновляем ID начиная с 1--}}
-{{--                    }--}}
-{{--                });--}}
-{{--            };--}}
-
-{{--            // Обновляем индексы при загрузке страницы--}}
-{{--            updateTableIndexes();--}}
-
-{{--            // Пример: вешаем событие на кнопки "Удалить"--}}
-{{--            document.querySelectorAll('form button[type="submit"]').forEach((button) => {--}}
-{{--                button.addEventListener('click', (event) => {--}}
-{{--                    event.preventDefault(); // Отключаем отправку формы--}}
-{{--                    const row = button.closest('tr'); // Находим строку с кнопкой--}}
-{{--                    if (row) {--}}
-{{--                        row.remove(); // Удаляем строку--}}
-{{--                        updateTableIndexes(); // Обновляем индексы--}}
-{{--                    }--}}
-{{--                });--}}
-{{--            });--}}
-{{--        });--}}
-{{--    </script>--}}
 @endsection

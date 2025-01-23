@@ -14,7 +14,7 @@ Route::get('/', function () {
 
 Route::post('/import/stores', [FeedbackController::class, 'importFromCSV']);
 
-Route::middleware('auth')->group(function () {
+//Route::middleware('auth')->group(function () {
     Route::prefix('admin')->group(function () {
         Route::get('seo', [AdminController::class, 'seoIndex'])->name('admin.seo.index');
         Route::get('seo/create', [AdminController::class, 'seoCreate'])->name('admin.seo.create');
@@ -42,7 +42,7 @@ Route::middleware('auth')->group(function () {
 
 //    Route::resource('category', CategoryController::class);
         });
-    });
+//    });
 
 
 Route::post('/login', [AuthController::class, 'login']);
