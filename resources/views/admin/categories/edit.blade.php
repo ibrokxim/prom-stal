@@ -35,10 +35,10 @@
                     <textarea class="form-control" id="meta_description" name="meta_description">{{ old('meta_description', $category->meta_description) }}</textarea>
                 </div>
 
-                <div class="mb-3">
-                    <label for="code" class="form-label">Код</label>
-                    <input type="text" class="form-control" id="code" name="code" value="{{ old('code', $category->code) }}" required>
-                </div>
+{{--                <div class="mb-3">--}}
+{{--                    <label for="code" class="form-label">Код</label>--}}
+{{--                    <input type="text" class="form-control" id="code" name="code" value="{{ old('code', $category->code) }}" required>--}}
+{{--                </div>--}}
 
                 <div class="mb-3">
                     <label for="picture" class="form-label">Изображение</label>
