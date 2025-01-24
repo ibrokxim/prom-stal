@@ -167,7 +167,7 @@ class CategoryController extends Controller
             'meta_title' => 'nullable|string|max:255',
             'meta_description' => 'nullable|string',
             'code' => 'required|string|max:255|unique:categories,code,' . $category->id,
-            'picture' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
+            'picture' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg'
         ]);
 
         $data = $request->all();
@@ -195,7 +195,7 @@ class CategoryController extends Controller
             'meta_title' => 'nullable|string|max:255',
             'meta_description' => 'nullable|string',
             'code' => 'required|string|unique:categories,code|max:255',
-            'picture' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
+            'picture' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg'
         ]);
 
         $data = $request->all();
