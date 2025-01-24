@@ -40,7 +40,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('category/{id}', [CategoryController::class, 'categoryDestroy'])->name('admin.categories.destroy');
         Route::get('category/{slug}', [CategoryController::class, 'show'])->name('category.show');
         Route::get('/categories/bulk-edit', [CategoryController::class, 'bulkSeoEdit'])->name('admin.categories.bulk-edit');
-        Route::put('/categories/bulk-update', [CategoryController::class, 'bulkSeoUpdate'])->name('admin.3categories.bulk-update');
+        Route::put('/categories/bulk-update', [CategoryController::class, 'bulkSeoUpdate'])->name('admin.categories.bulk-update');
 
 //    Route::resource('category', CategoryController::class);
         });
