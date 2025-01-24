@@ -8,7 +8,6 @@
         <div class="card-body">
             <form action="{{ route('admin.categories.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
-
                 <div class="mb-3">
                     <label for="name" class="form-label">Название</label>
                     <input type="text" class="form-control" id="name" name="name" value="{{ old('name') }}">

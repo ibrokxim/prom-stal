@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use App\Services\SeoService;
 use Illuminate\Http\Request;
@@ -143,8 +144,8 @@ class CategoryController extends Controller
 
     public function categoryEdit($id)
     {
-        $categories = Category::findOrFail($id);
-        return view('admin.categories.edit', compact('categories'));
+        $category = Category::findOrFail($id);
+        return view('admin.categories.edit', compact('category'));
     }
 
     public function categoryDestroy($id)
@@ -172,7 +173,6 @@ class CategoryController extends Controller
         $data = $request->all();
 
         if ($request->hasFile('picture')) {
-            // Удаляем старое изображение, если оно существует
             if ($category->picture) {
                 Storage::delete($category->picture);
             }
@@ -201,7 +201,7 @@ class CategoryController extends Controller
         $data = $request->all();
 
         if ($request->hasFile('picture')) {
-            // Сохраняем изображение
+
             $data['picture'] = $request->file('picture')->store('images/categories');
         }
 
