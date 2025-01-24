@@ -157,30 +157,55 @@ class CategoryController extends Controller
 
     public function categoryUpdate(Request $request, $id)
     {
-        $categories = Category::findOrFail($id);
+        $category = Category::findOrFail($id);
 
         $request->validate([
+            'name' => 'required|string|max:255',
+            'short_description' => 'nullable|string',
+            'description' => 'nullable|string',
             'meta_title' => 'nullable|string|max:255',
             'meta_description' => 'nullable|string',
-            'code' => 'required|string|max:255|unique:seo,code,' . $categories->id,
+            'code' => 'required|string|max:255|unique:categories,code,' . $category->id,
+            'picture' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
         ]);
 
-        // Обновление записи
-        $categories->update($request->all());
+        $data = $request->all();
 
-        // Перенаправление с сообщением об успехе
+        if ($request->hasFile('picture')) {
+            // Удаляем старое изображение, если оно существует
+            if ($category->picture) {
+                Storage::delete($category->picture);
+            }
+
+            // Сохраняем новое изображение
+            $data['picture'] = $request->file('picture')->store('images/categories');
+        }
+
+        $category->update($data);
+
         return redirect()->route('admin.categories.index')->with('success', 'SEO запись обновлена!');
     }
 
     public function categoryStore(Request $request)
     {
         $request->validate([
+            'name' => 'required|string|max:255',
+            'short_description' => 'nullable|string',
+            'description' => 'nullable|string',
             'meta_title' => 'nullable|string|max:255',
             'meta_description' => 'nullable|string',
-            'code' => 'required|string|unique:seo,code|max:255',
+            'code' => 'required|string|unique:categories,code|max:255',
+            'picture' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
         ]);
 
-        Category::create($request->all());
+        $data = $request->all();
+
+        if ($request->hasFile('picture')) {
+            // Сохраняем изображение
+            $data['picture'] = $request->file('picture')->store('images/categories');
+        }
+
+        Category::create($data);
 
         return redirect()->route('admin.categories.index')->with('success', 'SEO запись добавлена!');
     }
